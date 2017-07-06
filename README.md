@@ -1,0 +1,2 @@
+# Notes
+Android development notes
