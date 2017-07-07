@@ -5,7 +5,7 @@
 然后我就纠结了，因为我知道，如果是因为内存不足而被清理，onDestroy()方法一般是不会被执行的。所以只好实话实说，只知道onDestroy在这种情况下不一定会执行，所以不能在其中做操作。
 事后又去看了一下官方文档，发现：对于activity的销毁，有下面这么一个表：
 
-![Image text](https://github.com/Don-Lee/Notes/Images/avtivity_killable.jpg)
+![Image text](https://github.com/Don-Lee/Notes/blob/master/Images/avtivity_killable.jpg)
 
 
 "Killable"表示当前activity是否可以被杀死，意思是说当上面标记为Killable的方法返回之后，activity就可能随时被杀死。从表中不难看出在onPause方法调用完之前，activity都是不能够被杀死的，而onStop()和onDestroy()都是可以被杀死的。但是图中又标出了一个黄色的标记：HONEYCOMB。
@@ -34,7 +34,7 @@ onSaveInstanceState(Bundle)将在activity转入“background state后台状态�
 
 也就是说onSaveInstanceState(Bundle)会在activity转入后台状态之前被调用，也就是onStop()方法之前，onPause方法之后被调用；我们都知道在默认情况下，在旋屏之后，activity会重新经历一次生命周期，下面的log就是在点击旋屏之后的执行顺序：
 
-![Image text](https://github.com/Don-Lee/Notes/Images/callback_order.jpg)
+![Image text](https://github.com/Don-Lee/Notes/blob/master/Images/callback_order.jpg)
 
 这样看起来，那种要保存的数据，应该在onPause下完成，而activity的一些状态值，比如组件宽高之类的，应该在onSaveInstanceState中保存在Bundle中去。
 
@@ -47,7 +47,7 @@ Note that it is important to save persistent data in onPause() instead of onSave
 
 生命周期图：
 
-![Image text](https://github.com/Don-Lee/Notes/Images/activity_lifecycle.jpg)
+![Image text](https://github.com/Don-Lee/Notes/blob/master/Images/activity_lifecycle.jpg)
 
 
 转自：http://blog.csdn.net/cyp331203/article/details/44985087
