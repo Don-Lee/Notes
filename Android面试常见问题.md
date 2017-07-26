@@ -58,12 +58,12 @@ a)、提高进程的优先级，降低进程被杀死的概率
     适用场景：本方案主要解决第三方应用及系统管理工具在检测到锁屏事件后一段时间（一般为5分钟以内）内会杀死后台进程，已达到省电的目的问题   
     
     2)、利用Notification提升权限          
-    Android中的Service的优先级为4，通过setForeground接口可以将后台Service设置为前台Service，是进程的优先级由4提升为2，从而使进程的优先级仅仅低于
-    用户当前正在交互的进程，与可见进程的优先级一致。  
+    Android中的Service的优先级为4，通过setForeground接口可以将后台Service设置为前台Service，是进程的优先级由4提升为2，
+    从而使进程的优先级仅仅低于用户当前正在交互的进程，与可见进程的优先级一致。  
     
     3)、AndroidManifest设置    
-    在AndroidManifest.xml文件中对于intent-filter可以通过android:priority="1000"这个属性设置最高优先级，1000是最高值，数字越小，优先级越低，同时
-    也适用于广播。  
+    在AndroidManifest.xml文件中对于intent-filter可以通过android:priority="1000"这个属性设置最高优先级，1000是最高值，
+    数字越小，优先级越低，同时也适用于广播。  
     
 b)、进程死后，进行拉活     
     1)、利用系统广播拉活     
@@ -74,7 +74,8 @@ b)、进程死后，进行拉活
     例：将Service设置为START_STICKY，利用系统机制在 Service 挂掉后自动拉活  
     
     3）、利用Native进程进行拉活   
-    例：利用 Linux 中的 fork 机制创建 Native 进程，在 Native 进程中监控主进程的存活，当主进程挂掉后，在 Native 进程中立即对主进程进行拉活。   
+    例：利用 Linux 中的 fork 机制创建 Native 进程，在 Native 进程中监控主进程的存活，当主进程挂掉后，
+    在Native进程中立即对主进程进行拉活。   
     
     4)、自定义广播拉活       
     例：service +broadcast 方式，就是当service走ondestory的时候，发送一个自定义的广播，当收到广播的时候，重新启动service   
