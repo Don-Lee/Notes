@@ -1,9 +1,0 @@
-1、Service 和Thread 的区别
-a)、Thread: thread是程序执行的最小单元，他是CPU的基本单位。可以用thread来执行一些异步操作。
-b)、Service: service是android的一种机制，当它运行的时候如果是LocalService,那么对应的Service运行在主线程的main线程上。如果是RemoteService,那么对
-应的service则运行在独立进程的main线程上。
-既然这样，那我们为什么还要用Service呢？其实这跟android的系统机制有关，我们先拿Thread来说。Thread的运行是独立于Activity的，也就是说当Activity被
-finish之后，如果你没有主动停止Thread或者Thread里的run方法没有执行完毕的话，Thread也会一直执行(PS:当activity被切换到后台时如果系统紧张，系统会随时
-结束掉你的process).因此这里会出现一个问题，当activity被finish之后，你不在持有该Thread的引用。另外一方面，你没有办法在不同的activity中对同一个
-Thread进行控制。
-
