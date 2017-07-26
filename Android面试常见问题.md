@@ -13,7 +13,8 @@ Thread进行控制。
 
 举个例子：如果你的Thread需要不停的隔一段时间就要连接服务器做某种同步的话，该Thread需要在Activity没有start的时候也在运行。这个时候当你start一个
 activity就没办法在该activity里控制之前创建的Thread。因此，你便需要创建并启动一个Service,在Service里面创建、运行并控制该Thread，这样便解决了该问题
-（因为任何Activity都可以控制同一Service，而系统也只会创建一个相应的Service实例）。   
+（因为任何Activity都可以控制同一Service，而系统也只会创建一个相应的Service实例）。  
+
 因此你可以把Service想象成一种消息服务，而你可以在任何有Context的地方调用Context.startService、Context.stopService、Context.bindService、
 Context.unbindService来控制它，你也可以在Service里注册BroadcastReceiver，在其他地方通过发送broadcast来控制它，当然，这些都是Thread做不到的。
 根据进程的优先级，Thread在后台运行(Activity stop)的优先级低于后台运行的Service，如果执行系统资源紧张，会优先杀死前一种，后台运行的service一般不会
@@ -57,27 +58,27 @@ a)、提高进程的优先级，降低进程被杀死的概率
     例：监控手机锁屏解锁事件，在屏幕锁屏时启动1个像素的Activity，在用户解锁后将Activity销毁。        
     适用场景：本方案主要解决第三方应用及系统管理工具在检测到锁屏事件后一段时间（一般为5分钟以内）内会杀死后台进程，已达到省电的目的问题   
     
-    2)、利用Notification提升权限          
+    2)、利用Notification提升权限          
     Android中的Service的优先级为4，通过setForeground接口可以将后台Service设置为前台Service，是进程的优先级由4提升为2，
     从而使进程的优先级仅仅低于用户当前正在交互的进程，与可见进程的优先级一致。  
     
-    3)、AndroidManifest设置    
+    3)、AndroidManifest设置    
     在AndroidManifest.xml文件中对于intent-filter可以通过android:priority="1000"这个属性设置最高优先级，1000是最高值，
     数字越小，优先级越低，同时也适用于广播。  
     
 b)、进程死后，进行拉活     
-    1)、利用系统广播拉活     
+    1)、利用系统广播拉活
     例：在发生特定系统事件时（如：屏幕亮灭、锁屏解锁、网络变化，开机等），系统会发出响应的广播，通过在AndroidManifest中“静态”注册对应的广播监听器，
     即可在发生响应的事件拉活。   
     
-    2)、利用系统Service机制拉活    
+    2)、利用系统Service机制拉活    
     例：将Service设置为START_STICKY，利用系统机制在 Service 挂掉后自动拉活  
     
-    3）、利用Native进程进行拉活   
+    3)、利用Native进程进行拉活   
     例：利用 Linux 中的 fork 机制创建 Native 进程，在 Native 进程中监控主进程的存活，当主进程挂掉后，
     在Native进程中立即对主进程进行拉活。   
     
-    4)、自定义广播拉活       
+    4)、自定义广播拉活 
     例：service +broadcast 方式，就是当service走ondestory的时候，发送一个自定义的广播，当收到广播的时候，重新启动service   
     
 c)、通过推送拉活     
