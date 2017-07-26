@@ -1,7 +1,8 @@
 导读：最近有点时间，所以整理了一下Android面试中经常遇到的一些问题，大部分都是互联网上收集的，很多原作者的链接没有了，非常抱歉，如有问题可直接与我联
 系，thanks.
 
-1、Service 和Thread 的区别  
+1、Service 和Thread 的区别 
+-----
 a)、Thread: thread是程序执行的最小单元，他是CPU的基本单位。可以用thread来执行一些异步操作。   
 b)、Service: service是android的一种机制，当它运行的时候如果是LocalService,那么对应的Service运行在主线程的main线程上。如果是RemoteService,那么对
 应的service则运行在独立进程的main线程上。
@@ -21,7 +22,8 @@ Context.unbindService来控制它，你也可以在Service里注册BroadcastRece
 被杀死，如果杀死，系统空闲时会重新启动service。    
 service运行在主线程中，如果在Service中做耗时任务要开启子线程。
 
-2、Handler是什么？               
+2、Handler是什么？   
+----
 Handler是android给我们提供用来更新UI的一套机制，也是一套消息处理机制，我们可以发送消息，也可以通过它来处理消息。 
 
 a)、为什么要用Handler？       
@@ -52,7 +54,8 @@ Looper
 
 
 
-3、如何保证Service不被杀死       
+3、如何保证Service不被杀死 
+----
 a)、提高进程的优先级，降低进程被杀死的概率     
     1)、利用Activity提升权限       
     例：监控手机锁屏解锁事件，在屏幕锁屏时启动1个像素的Activity，在用户解锁后将Activity销毁。        
@@ -88,12 +91,14 @@ c)、通过推送拉活
 __biz=MzA3NTYzODYzMg==&mid=2653577617&idx=1&sn=623256a2ff94641036a6c9eea17baab8&scene=0#wechat_redirect    
 
 4、Activity和Fragment的生命周期     
+-----
 ![Image text](https://github.com/Don-Lee/Notes/blob/master/Images/activity_fragment.png)   
 
 
 
 
 5、Activity的任务栈    
+-----
 在AndroidManifest.xml中使用android:launchMode="standard|singleInstance|singleTask|SingleTop"来控制activity的任务栈。     
 
 任务栈是一种后进先出的结构。位于栈顶的Activity处于焦点状态，当按下back键时，栈内的activity会一个一个的出栈，并调用onDestory()方法。如果栈内没有
