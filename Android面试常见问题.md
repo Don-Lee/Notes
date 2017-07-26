@@ -26,12 +26,12 @@ service运行在主线程中，如果在Service中做耗时任务要开启子线
 ----
 Handler是android给我们提供用来更新UI的一套机制，也是一套消息处理机制，我们可以发送消息，也可以通过它来处理消息。 
 
-a)、为什么要用Handler？       
+#### a)、为什么要用Handler？       
 android在设计的时候就封装了一套消息创建、传递、处理机制。如果不遵循这样的机制就没办法更新UI信息，就会抛出异常
 （android.view.ViewRootImpl$CalledFromWrongThreadException:
 Only the original thread that created a view hierarchy can touch its views.）   
 
-b)、android为什么要设计通过Handler机制更新UI呢？   
+#### b)、android为什么要设计通过Handler机制更新UI呢？   
 最根本的问题是解决多线程并发的问题。   
 假设如果在一个activity中，有多个线程去更新UI，并且都没有加锁机制，那么会产生什么样的问题？     
 更新界面错乱     
@@ -41,7 +41,7 @@ b)、android为什么要设计通过Handler机制更新UI呢？
 出于对以上问题的考虑，android给我们提供了一套更新UI的机制，我们只需要遵循这样的机制就可以了，根本不用关心多线程的问题，所有更新UI操作都是在主线程的
 消息队列当中去轮流处理的       
 
-c)、handler的原理      
+#### c)、handler的原理      
 Handler       
 封装了消息的发送，解决多线程并发引发的问题，地址就是Messagetarget（默认情况发送给自己）   
 
@@ -56,7 +56,7 @@ Looper
 
 3、如何保证Service不被杀死 
 ----
-a)、提高进程的优先级，降低进程被杀死的概率     
+#### a)、提高进程的优先级，降低进程被杀死的概率     
     1)、利用Activity提升权限       
     例：监控手机锁屏解锁事件，在屏幕锁屏时启动1个像素的Activity，在用户解锁后将Activity销毁。        
     适用场景：本方案主要解决第三方应用及系统管理工具在检测到锁屏事件后一段时间（一般为5分钟以内）内会杀死后台进程，已达到省电的目的问题   
@@ -69,7 +69,7 @@ a)、提高进程的优先级，降低进程被杀死的概率
     在AndroidManifest.xml文件中对于intent-filter可以通过android:priority="1000"这个属性设置最高优先级，1000是最高值，
     数字越小，优先级越低，同时也适用于广播。  
     
-b)、进程死后，进行拉活     
+#### b)、进程死后，进行拉活     
     1)、利用系统广播拉活
     例：在发生特定系统事件时（如：屏幕亮灭、锁屏解锁、网络变化，开机等），系统会发出响应的广播，通过在AndroidManifest中“静态”注册对应的广播监听器，
     即可在发生响应的事件拉活。   
@@ -84,7 +84,7 @@ b)、进程死后，进行拉活
     4)、自定义广播拉活 
     例：service +broadcast 方式，就是当service走ondestory的时候，发送一个自定义的广播，当收到广播的时候，重新启动service   
     
-c)、通过推送拉活     
+#### c)、通过推送拉活     
     根据终端不同，在小米手机（包括 MIUI）接入小米推送、华为手机接入华为推送；其他手机可以考虑接入腾讯信鸽或极光推送与小米推送做 A/B Test。国外版应用
     可考虑接入 Google 的 GCM。      
 参考博客：https://mp.weixin.qq.com/s?
