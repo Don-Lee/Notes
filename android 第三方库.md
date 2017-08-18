@@ -24,3 +24,8 @@ http://www.cnblogs.com/fsjohnhuang/p/4094777.html
 极客学院 教程
 -------
 http://wiki.jikexueyuan.com/project/android-animation/2.html
+
+
+总有你要的编程书单
+----------
+http://www.gad.qq.com/article/detail/31474?sessionUserType=BFT.PARAMS.232734.TASKID&ADUIN=731807845&ADSESSION=1503017883&ADTAG=CLIENT.QQ.5533_.0&ADPUBNO=26719
