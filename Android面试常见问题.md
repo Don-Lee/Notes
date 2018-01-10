@@ -183,3 +183,15 @@ Fragment可以响应自己的输入事件，并且有自己的生命周期，它
 8)、对webview退出时进行回收               
 9)、能使用application Context 的时候尽量不使用 Activity Context              
 10)、使用弱引用handler
+
+12、Retrofit + okHttp + RxJava
+------------
+Retrofit:
+	Retrofit是简化HTTP请求的库，retrofit 2背后的Http client只支持okHttp，详情请参考：https://academy.realm.io/cn/posts/droidcon-jake-wharton-simple-http-retrofit-2/
+	
+RxJava:
+	rxJava为android 提供了一种全新的异步操作机制，详情请参考：https://academy.realm.io/cn/posts/360andev-christina-lee-intro-rxjava-java-android/
+	
+okHttp:
+	
+
