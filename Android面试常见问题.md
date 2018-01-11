@@ -179,10 +179,14 @@ Fragment可以响应自己的输入事件，并且有自己的生命周期，它
 4)、对可重用对象进行重用                 
 5)、谨慎使用依赖注入                 
 6)、减少布局的嵌套层次            
-7)、尽量少用services              
+7)、尽量少用services             
 8)、对webview退出时进行回收               
 9)、能使用application Context 的时候尽量不使用 Activity Context              
 10)、使用弱引用handler
+11）、移除掉所有的静态引用。
+12)、考虑用 EventBus 来解耦 Listener。
+13)、记着在不需要的时候，解除 Listener 的绑定。
+14）、尽量用静态内部类。
 
 12、Retrofit + okHttp + RxJava
 ------------
