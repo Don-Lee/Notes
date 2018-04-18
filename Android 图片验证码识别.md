@@ -8,7 +8,7 @@
 3. 接下来就是字符分割，将图片上的字符分为单个的字符                   
 4. 训练，将一定规模的标记号的字符经过图片预处理后得到的特征值与其对应的字符内容，选择特定算法进行训练，得到训练模板             
 
- 好了，思路已经有了，接下来就要对图片进行二值化和降噪，这里我用的OpenCV的二值化、腐蚀以及膨胀推图片进行的处理，效果还是不错的，代码如下：
+ 好了，思路已经有了，接下来就要对图片进行二值化和降噪，这里我用的OpenCV的二值化、腐蚀以及膨胀推图片进行的处理，个人感觉效果是比其他方式要好很多，写代码之前还请配置好OpenCV库，配置方式可查看上篇博文[《Android Studio配置OpenCV》](https://github.com/Don-Lee/Notes/blob/master/Android%20Studio%E9%85%8D%E7%BD%AEOpenCV.md)，代码如下：
   
 ```java
  public Bitmap binaryImg(Bitmap bitmap) {
