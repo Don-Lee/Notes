@@ -1,5 +1,6 @@
-android studio 配置openCV的方法：                  
+android studio 配置openCV的方法：                                         
 1、在http://opencv.org/  官网上下载OpenCV-android-sdk     
+
 2、解压下载的文件：              
 sdk目录即是我们开发opencv所需要的类库；                 
 samples目录中存放着若干opencv应用示例；                      
@@ -11,10 +12,13 @@ static{
         System.loadLibrary("opencv_java3");
     }
 ```
+
 3、将OpenCV加入到AndroidStudio中：                                                 
-在Android Studio中选择File->New->Import Module，找到OpenCV解压的路径，选择sdk/java文件夹。                                                   
+在Android Studio中选择File->New->Import Module，找到OpenCV解压的路径，选择sdk/java文件夹。     
+
 4、添加Module Dependency：              
   使用快捷键Shift+Ctrl+Alt+s  或者直接右击app->Open Module Settings 打开下面对话框选择在app module                
-的Dependencies一栏将openCVLibrary添加进去                            
+的Dependencies一栏将openCVLibrary添加进去         
+
 5、在app-->src-->main目录下，新建文件夹jniLibs  并将OpenCV-android-sdk 解压包下面的sdk->native->libs文件夹下面的文件拷贝到jniLibs文件下。
 （我只拷贝了armeabi-v7a文件夹）
