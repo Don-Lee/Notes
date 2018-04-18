@@ -1,4 +1,5 @@
-android studio 配置openCV的方法：                                         
+android studio 配置openCV的方法：   
+
 1、在http://opencv.org/  官网上下载OpenCV-android-sdk     
 
 2、解压下载的文件：              
