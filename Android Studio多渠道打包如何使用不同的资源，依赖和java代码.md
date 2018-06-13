@@ -4,9 +4,9 @@
 
 ### 资源文件的适配
 假如有这么一个需求：现在需要打包两个版本，但要求两个版本的某些图片不一样，并且app的名称也不同，简单的做下适配 
-1、这里我新建立了一个res资源文件，res_cq，把这个版本的图片放到这资源文件下，这样项目在打包时就会直接覆盖res文件下对应的资源 
-![Image text](https://github.com/Don-Lee/Notes/blob/master/Images/20180613173408.png)
-2、在gradle里配置不同平台采用不同的资源文件
+###### 1、这里我新建立了一个res资源文件，res_cq，把这个版本的图片放到这资源文件下，这样项目在打包时就会直接覆盖res文件下对应的资源             
+![Image text](https://github.com/Don-Lee/Notes/blob/master/Images/20180613173408.png)            
+###### 2、在gradle里配置不同平台采用不同的资源文件
 ```java
 //以下代码放在android{}内
 //配置资源文件路径，可动态指定不同版本资源文件
