@@ -29,6 +29,7 @@
     
     productFlavors{
         ewd{
+            buildConfigField "int","EVN_TYPE","0"
             // 对resValue在java代码中的使用：String app_id = getResources().getString(R.string.app_id);
             resValue("string", "app_id", "50074")
             resValue("string", "app_start", "1")
@@ -38,6 +39,8 @@
             manifestPlaceholders=[app_name:"@string/app_name",icon:"@mipmap/ic_launcher"]
         }
         chunqin{
+            //java代码中可以使用if(BuildConfig.EVN_TYPE==1)来判断是哪个渠道
+            buildConfigField "int","EVN_TYPE","1"
             //包名
             applicationId "com.ewd.cq"
             manifestPlaceholders=[app_name:"@string/app_name_cq",icon:"@mipmap/ic_launcher"]
@@ -53,4 +56,6 @@
 办法 Google 早就给我们想好了，而且相当简单，那就是：在 main 的同级目录下创建以渠道名命名的文件夹，在渠道文件夹下有两种类型的文件会被用到，一种是资源文件，一种的java代码文件，资源文件跟在main中的资源文件使用的方式方法是一样的，有不同的资源文件时，只要命名跟main文件中的资源命名是样的，就会自动替换掉main中的资源文件，不过java文件夹下面的java文件不太一样，不会自动替换掉main中的java文件，所以使用的时候，如果是渠道独有的java文件的话，在main中就不要存在该java文件就行，否则会报文件重复的错误。
 
 
-更多可参考https://blog.csdn.net/CHX_W/article/details/78660462
+更多可参考
+https://www.jianshu.com/p/872dc6f89cb4                         
+https://blog.csdn.net/CHX_W/article/details/78660462
