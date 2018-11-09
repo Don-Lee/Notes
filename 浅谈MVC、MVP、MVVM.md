@@ -33,6 +33,7 @@ Presenter负责完成View与Model间的交互和业务逻辑。Presenter作为Mo
 2.View interface :需要View实现的接口，View通过View interface与Presenter进行交互，降低耦合，方便进行单元测试;
 3.Model :负责存储、检索、操纵数据(有时也实现一个Model interface用来降低耦合);
 4.Presenter :作为View与Model交互的中间纽带，处理与用户交互的负责逻辑。
+
 优点:
 1. mvc有的优点mvp都具备
 2. 解耦view和presenter
@@ -59,6 +60,7 @@ View层就是展示数据的，以及接收到用户的操作传递给viewModel�
 ViewModel逻辑控制层，负责处理数据和处理View层中的业务逻辑。它还为View提供了将事件传递给Model的通道
 
 **总结：** 
+
 优点：
 1. 低耦合。解耦了view和viewmodel
 2. 更新UI。我们在工作线程直接修改（在数据是线程安全的情况下）ViewModel的数据即可，不用再考虑要切到主线程更新UI了
@@ -68,3 +70,4 @@ ViewModel逻辑控制层，负责处理数据和处理View层中的业务逻辑�
 1. 数据绑定使得 Bug 很难被调试。你看到界面异常了，有可能是你 View 的代码有 Bug，也可能是 Model 的代码有问题。数据绑定使得一个位置的 Bug 被快速传递到别的位置，要定位原始出问题的地方就变得不那么容易了。
 2. 数据双向绑定不利于代码重用。客户端开发最常用的重用是View，但是数据双向绑定技术，让你在一个View都绑定了一个model，不同模块的model都不同。那就不能简单重用View了。
 
+更详细的mvvm可参考[https://tech.meituan.com/android_mvvm.html](https://tech.meituan.com/android_mvvm.html)
