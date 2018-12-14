@@ -1,5 +1,6 @@
-DataBinding双向绑定String类型数据时没有任何问题，但是双向绑定int、double等类型数据时会有些问题，特此记录解决方案：
-创建inverseMethod方法    
+DataBinding双向绑定String类型数据时没有任何问题，但是双向绑定int、double等类型数据时会有些问题，特此记录解决方案：              
+
+创建inverseMethod方法                     
 ```java
 public class DataBindingUtils {
 
