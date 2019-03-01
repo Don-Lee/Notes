@@ -19,3 +19,13 @@ Service是Android四大组件中与Activity最相似的组件，它们都代表�
     b：bindService
     Service的生命周期 onCreate() --> onBind()  --> onUnBind() --> onDestroy()
     停止服务：UnbindService()
+    
+#### 3、Service和Activity的通讯方式
+    a、通过Intent
+    startService（intent）来启动Service，在intent中放入数据，在Service的onStartCommant()中接收通过intent传过来的值。（性能差）
+    b、binder+回调
+    在Activity中实现ServiceConnection，在onServiceConnected()中获取Service的实例，通过这个实例就能调用Service的方法和变量了。
+    通过回调可以将Service主动将变化通知Activity。
+    c、Broadcase方式
+    在Service中需要通知更新UI的地方，发送广播，在Activity中注册广播，在BroadcaseRecever中接受广播，更新UI。
+    d、EventBus或RxBus
