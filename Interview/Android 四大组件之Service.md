@@ -13,7 +13,7 @@ Service是Android四大组件中与Activity最相似的组件，它们都代表�
     
 #### 2、Service的生命周期               
     a：startService 
-    Service的生命周期：onCreate() --> onStart() -> onDestroy()
+    Service的生命周期：onCreate() --> onStartCommand() -> onDestroy()
     停止服务：stopService()
     
     b：bindService
