@@ -346,7 +346,7 @@ public class ThreadPoolTest {
 ```
 结果：
 ![](https://github.com/Don-Lee/Notes/blob/master/Images/线程池执行过程.webp) 
-<p align="center"><u>线程池执行过程<u> </p>    
+<p align="center"><u>线程池执行过程</u> </p>    
 ![](https://github.com/Don-Lee/Notes/blob/master/Images/线程池执行完毕.webp "线程池执行完毕")
 <p align="center"><u>线程池执行完毕</u></p>                                          
 注意事项：
