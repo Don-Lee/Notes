@@ -12,39 +12,38 @@
 基本使用:                        
 AsyncTask是一个抽象方法，如果想使用它，需要先创建一个子类来继承他，还需要为其指定三个泛型参数：                      
                     
-Params                
+- Params                
 在执行AsyncTask时需要传入的参数，可用于在后台任务中使用。                 
-Progress                  
+- Progress                  
 后台任务执行时，如果需要在界面上显示当前的进度，则使用这里指定的泛型作为进度单位。                       
-Result                    
+- Result                    
 当任务执行完毕后，如果需要对结果进行返回，则使用这里指定的泛型作为返回值类型。                         
                       
 经常需要去重写的方法有以下四个：                            
                       
-onPreExecute()                      
+1、onPreExecute()                      
 这个方法会在后台任务开始执行之间调用，用于进行一些界面上的初始化操作，比如显示一个进度条对话框等。                     
-doInBackground(Params...)               
+2、doInBackground(Params...)               
 这个方法中的所有代码都会在子线程中运行，我们应该在这里去处理所有的耗时任务。任务一旦完成就可以通过return语句来将任务的执行结果进行返回，
 如果AsyncTask的第三个泛型参数指定的是Void，就可以不返回任务执行结果。注意，在这个方法中是不可以进行UI操作的，如果需要更新UI元素，比如说反馈当前
 任务的执行进度，可以调用publishProgress(Progress...)方法来完成。                              
-onProgressUpdate(Progress...)                                     
+3、onProgressUpdate(Progress...)                                     
 当在后台任务中调用了publishProgress(Progress...)方法后，这个方法就很快会被调用，方法中携带的参数就是在后台任务中传递过来的。在这个方法中可以
 对UI进行操作，利用参数中的数值就可以对界面元素进行相应的更新。                          
-onPostExecute(Result)                           
+4、onPostExecute(Result)                           
 当后台任务执行完毕并通过return语句进行返回时，这个方法就很快会被调用。返回的数据会作为参数传递到此方法中，可以利用返回的数据来进行一些UI操作，
 比如说提醒任务执行的结果，以及关闭掉进度条对话框等。                            
                               
 最后在需要的地方调用方法 new MyAsyncTask().execute();  就可以运行了。                                
 注意事项：                               
-
-首先，默认情况下，所有的 AsyncTask 任务都是被线性调度执行的，他们处在同一个任务队列当中，按顺序逐个执行。假设你按照顺序启动20个 AsyncTask，
+- 首先，默认情况下，所有的 AsyncTask 任务都是被线性调度执行的，他们处在同一个任务队列当中，按顺序逐个执行。假设你按照顺序启动20个 AsyncTask，
 一旦其中的某个 AsyncTask 执行时间过长，队列中的其他剩余 AsyncTask 都处于阻塞状态，必须等到该任务执行完毕之后才能够有机会执行下一个任务。
 为了解决上面提到的线性队列等待的问题，我们可以使用 AsyncTask.executeOnExecutor()强制指定 AsyncTask 使用线程池并发调度任务。                  
-其次，如何才能够真正的取消一个 AsyncTask 的执行呢？我们知道 AsyncTaks 有提供 cancel()的方法，但是这个方法实际上做了什么事情呢？
+- 其次，如何才能够真正的取消一个 AsyncTask 的执行呢？我们知道 AsyncTaks 有提供 cancel()的方法，但是这个方法实际上做了什么事情呢？
 线程本身并不具备中止正在执行的代码的能力，为了能够让一个线程更早的被销毁，我们需要在 doInBackground()的代码中不断的添加程序是否被中止的判断逻辑。
 一旦任务被成功中止，AsyncTask 就不会继续调用 onPostExecute()，而是通过调用 onCancelled()的回调方法反馈任务执行取消的结果。
-我们可以根据任务回调到哪个方法（是 onPostExecute 还是 onCancelled）来决定是对 UI 进行正常的更新还是把对应的任务所占用的内存进行销毁等。                 
-最后，使用 AsyncTask 很容易导致内存泄漏，一旦把 AsyncTask 写成 Activity 的内部类的形式就很容易因为 AsyncTask 生命周期的不确定而导致 
+我们可以根据任务回调到哪个方法（是 onPostExecute 还是 onCancelled）来决定是对 UI 进行正常的更新还是把对应的任务所占用的内存进行销毁等。          
+- 最后，使用 AsyncTask 很容易导致内存泄漏，一旦把 AsyncTask 写成 Activity 的内部类的形式就很容易因为 AsyncTask 生命周期的不确定而导致 
 Activity 发生泄漏。
 
 综上所述，AsyncTask 虽然提供了一种简单便捷的异步机制，但是我们还是很有必要特别关注到他的缺点，避免出现因为使用错误而导致的严重系统性能问题。         
