@@ -1,0 +1,1197 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <!--<link href="icon.png" rel="shortcut icon" type="image/png"/>-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.layout/1.4.3/layout-default.css">
+  <!--<link rel="stylesheet" href="../dist/index.bundle.css">-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wzjwhut/markdown-editor@63af4c3f9657958410d252802357ae6bc9fe5c0f/dist/index.bundle.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.1.1/remodal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.1.1/remodal-default-theme.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.css" integrity="sha384-xNwWFq3SIvM4dq/1RUyWumk8nj/0KFg4TOnNcfzUU4X2gNn3WoRML69gO7waf3xh" crossorigin="anonymous">
+  <script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.js" integrity="sha384-UP7zD+aGyuDvxWQEDSRYcvoTxJSD82C6VvuEBktJZGo25CVhDstY9sCDHvyceo9L" crossorigin="anonymous"></script>
+  <style>
+    .toc {
+      position: fixed !important;
+      right: 20px !important;
+      top: 5% !important;
+      width: 250px !important;
+      overflow: auto !important;
+      height: 90% !important;
+    }
+    .markdown-body{
+      padding-right: 250px !important;
+    }
+
+    .markdown-body p {
+      text-align: left !important;
+    }
+
+    .my-red-point{
+      display:block;
+      background:#f00;
+      border-radius:50%;
+      width:5px;
+      height:5px;
+      top:0px;
+      right:0px;
+      position:absolute;
+    }
+    .my-disable-click{
+      pointer-events: none;
+    }
+  </style>
+
+
+</head>
+<body>
+<xmp id="saved" style="visibility: hidden;display:none">[TOC]
+
+# 规范
+`string`类型均为`UTF8`编码
+`timestamp`为距离`UTC 1970-01-01 00:00:00`的毫秒数
+url及json中的参数名称区分大小写
+
+# 错误码
+| 错误码 | 说明 |
+| -    |  -  |
+| 0   | 操作成功
+| 10000 | 未知错误
+| 10001 | 用户名不存在
+| 10002 |签名/密码错误
+| 10003 | access token已经过期, 需要重新调用登录接口
+| 10004 | 账号被其它人使用，APP使用者需要重新填写登录密码
+
+
+# 登录
+```
+http://localhost/yinuoda/app/api/login?
+username=admin&date=1540217950000&sign=68126604d5a740914edba20f08933195
+```
+请求参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|username|string|必选|APP用户的名称|
+|date | timestamp | 必选 | 执行登录时的时间, 如果过期5分钟, 服务器将拒绝本次登录请求.
+|sign| string | 必选 | 用户签名, 计算公式为`MD5(username + date + password)`,</br> 假设`username`=`admin`, date=`1540217950000`, `password`=`123456`, 那么sign=MD5(`admin1540217950000123456`)=`c92d107da5829e73faf684e03443987c`
+
+如果成功, 则返回
+```
+{
+	"code":0,
+	"access_token":"ACCESSTOKEN",
+	"expires_in": 3600
+}
+```
+
+
+
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|code|int|必选| 0表示登录成功, 10001表示用户名不存在, 10002表示签名或密码错误 
+|access_token| string | 可选 | 用户令牌，　其它的接口都使用此接口来验证身份
+|expires_in | int | 可选　| access_token的有效时间，　单位为秒． 
+
+
+# Token身份验证
+
+除了登录接口，　其它的需要验证身份的接口都使用`access token`来作为令牌．http请求中附带令牌的方式有两种, 调用者二选一即可
+1. Http Header中加入令牌
+本系统推荐使用这种方式
+基本格式为
+```
+GET /resource HTTP/1.1
+Authorization: token ACCESSTOKEN
+...
+```
+
+2. 加入到请求参数中
+```
+http://ip:port/yinuoda/app/test?access_token=ACCESSTOKEN
+```
+
+如果access token失效，服务器将返回`http 401 Unauthorized`错误, 并返回json格式的消息体
+```
+{
+	"code":10003,
+	"reason":"access token已经过期"
+}
+```
+这里可能的错误码有`10003`, `10004`.
+
+#资源文件下载
+APP 有可能已经缓存了这些资源文件. 为了提高效率, 减少不必要的数据传输. 本系统使用ETAG来判断是否需要下载文件.
+APP发出资源请求
+```
+GET /.... HTTP/1.1
+Authorization: token ACCESSTOKEN
+If-None-Match: "RESOURCES MD5"
+```
+
+如果资源文件的MD5值匹配, 则不会返回资源内容, 只返回http消息头
+```
+HTTP/1.1 304 OK
+```
+
+如果客户端不传If-None-Match, 或者资源文件的MD5不匹配, 则服务器返回资源文件的全部内容
+```
+HTTP/1.1 200 OK
+Etag:"RESOURCES MD5"
+...
+```
+
+# 文件上传
+目前app上传的文件存储路径为/mnt/yinuoda/app
+
+```
+POST http://ip:port/yinuoda/app/res/priv/upload
+MUTLIPART body
+fileName=FILENAME.jpg
+file=FILE BINARY DATA
+```
+
+返回结果
+```
+{
+	"code":0,
+	"url":["http://", "http://"]
+}
+```
+
+# 下载APP启动图片
+
+本接口不需要验证身份
+```
+http://ip:port/yinuoda/app/res/pub/splash
+```
+
+
+# 获取模块和分类
+```
+GET http://ip:port/yinuoda/app/api/module/list?projectId=
+```
+请求参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|projectId|string|可选| 如果此参数不存在, 则只是简单的拉取所有的模块信息; 如果存在, 则拉取此项目的模块配置信息 
+
+
+返回结果
+```
+{
+	"code":0
+	"data":{
+		list:[
+			{
+				"id":"solution",
+				"name":"方案设计",
+				"checked":true,
+				"catalog":[
+					{
+						"id":"CATALOG_ID1",
+						"name":"住宅未装修",
+						"checked":true;
+					},
+					{
+						"id":"CATALOG_ID2",
+						"name":"住宅已装修"
+					}
+				]
+			},
+			{
+				"id":"survey",
+				"name":"现场勘测";
+			},
+			{
+				"id":"construction",
+				"name":"立项施工";
+			},
+			{
+				"id":"customize",
+				"name":"定制服务";
+			},
+			{
+				"id":"aftersale",
+				"name":"定制服务";
+			},
+		]
+	}
+}
+```
+基本参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|list.id|string|必选| 模块的ID 
+|list.name|string|必选| 模块上的文字 
+|list.catalog|array|必选 | 模块下的分类列表 
+|list.catalog.id|string| 必选 | 分类ID 
+|list.catalog.name| string | 必选 | 分类显示的名称 
+|list.catalog.checked| string | 可选 | 如果为true, 则表示当前项目使用了这个分类. 一个项目下, 一个模块只能选择一个分类. 
+
+# 项目接口
+
+## 获取项目列表
+```
+http://ip:port/yinuoda/app/api/project/list?pageNum=0&pageSize=5&status=approved
+```
+本接口默认为以创建时间降序排序, 即最近创建的项目在前 
+请求参数说明
+
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|pageNum|int|必选| 分页的序号, 从0开始  |
+|pageSize| int | 必选 | 每页的大小, 必须大于0 
+|status|string | 必选 | 筛选状态, 可多选; 可选值为`approved`(已立项)、`construction`（施工中）、`completed`（已竣工）、`all`（所有状态）
+
+
+返回结果 
+
+
+```
+{
+	"code":0
+	"data":{
+		"pages":10,
+		"pageNum":0,
+		"pageSize":5,
+		"total":50,
+		"isLastPage":false,
+		"list":[
+			{
+				"id":"PROJECT_ID",
+				"name":"东方花园",
+				"createTime":1540217950000,
+				"clientName":"张三",
+				"clientPhone":"13800000000",
+				"status":"approved",
+				"statusLabel":"已立项"
+			}
+		]
+	}
+}
+
+```
+
+
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|code|int|必选| 0表示登录成功, 其它表示失败 
+|data| json | 可选 | 数据集
+|pages | int | 必选　| 总的分页数 
+|pageNum | int | 必选　| 当前页序号, 从0开始 
+|pageSize| int | 必选 | 每页的记录数 
+|total | int | 必选 | 总的记录数 
+|isLastPage | boolean | 必选 | 当前页是否为最后一页 
+|list| array | 可选 | 查询到的记录列表
+| list.id | string | 必选 | 服务器为项目分配的唯一ID 
+| list.projectName | string | 必选 | 项目名称
+| list.createTime | timestamp | 必选 | 创建时间
+| list.clientName | string | 必选 | 客户名称
+| list.clientPhone | string | 必选 | 客户手机号
+| list.status | string | 必选 | 项目的状态
+
+
+## 项目详情
+```
+http://ip:port/yinuoda/app/api/project/info?id=PROJECT_ID
+```
+本接口默认为以创建时间降序排序, 即最近创建的项目在前 
+请求参数说明
+
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|id|int|必选| 项目的ID
+
+
+
+返回结果 
+
+
+```
+{
+	"code":0
+	"data":{
+		"id":"PROJECT_ID",
+		"name":"东方花园",
+		"simpleAddress":"上海",
+		"fullAddress":"2栋304室",
+		"areaSize":103.9,
+		"floorHeight":10.0,
+		"createTime":1540217950000,
+		"clientName":"张三",
+		"clientPhone":"13800000000",
+		"status":"approved",
+	}
+}
+
+```
+
+
+##创建项目
+
+```
+POST http://ip:port/yinuoda/app/api/project/create 
+Body  
+{
+	"name":"东方花园",
+	"simpleAddress":"上海",
+	"fullAddress":"2栋304室",
+	"areaSize":103.9,
+	"floorHeight":10.0,
+	"clientName":"张三",
+	"clientPhone":"13800000000",
+}
+```
+请求参数说明 
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+| name | string | 必选 | 项目名称
+| simpleAddress | string | 必选 | 项目的基本地址
+| fullAddress | string | 必选 | 项目的详细地址
+| areaSize | double | 必选 | 总建筑面积 
+| floorHeight | double | 必选 |　层高
+| clientName | string | 必选 | 客户名称 
+| clientPhone | string | 必选 | 客户的手机号
+
+
+返回结果
+```
+{
+	"code":0,
+	"data":{
+		"id":"PROJECT_ID"
+	}
+}
+```
+
+
+## 修改项目
+
+```
+POST http://ip:port/yinuoda/app/api/project/update
+Body
+{
+	"id":"PROJECT_ID",
+	"projectName":"东方花园",
+	"simpleAddress":"上海",
+	"fullAddress":"2栋304室",
+	"areaSize":103.9,
+	"floorHeight":10,
+	"clientName":"张三",
+	"clientPhone":"13800000000",
+	...
+}
+```
+body的内容为[项目详情](#项目详情)的`data`中的内容. 如果更新项目时, 移除或添加了一些字段, 服务器端也会产生一样的结果
+一般来说, 由APP定义的数据, 才能修改. 服务器定义的内部数据, 由服务器自己决定是否修改.  当然, APP不需要考虑这么多问题, 无脑上传就行了.
+
+返回结果
+```
+{
+    "code":0
+}
+```
+
+参数不再赘述
+
+## 删除项目
+软删除, 服务器不会彻底删除记录, 管理员可以执行恢复操作 
+```
+GET http://ip:port/yinuoda/app/api/project/delete?id=PROJECT_ID
+
+```
+返回结果
+```$xslt
+{
+    "code":0
+}
+```
+
+
+# 方案设计
+
+## 获取方案列表
+```
+http://ip:port/yinuoda/app/api/solution/list?
+pageNum=0&pageSize=5&projectId=PROJECT_UUID&catalogId=CATALOG_ID1&catalogId=CATALOG_ID2
+```
+请求参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|pageNum|int|必选| 分页的序号, 从0开始 
+|pageSize| int | 必选 | 每页的大小, 必须大于0 
+|projectId | string | 必选 | 项目的UUID
+|catalogId| list<string> | 可选 | 筛选分类, 如果不存在此参数, 则表示不筛选
+
+返回结果
+
+```
+{
+	"code":0
+	"data":{
+		"pages":10,
+		"pageNum":0,
+		"pageSize":5,
+		"total":50,
+		"isLastPage":false,
+		"projectId":"PROJECT_UUID",
+		"projectName":"PROJECT NAME",
+		"list":[
+			{
+				"id":"SOLUTION_ID",
+				"createTime":1540217950000,
+				"catalogId":"CATALOG_ID1",
+				"catalogName":"CATALOG_NAME",
+			}
+		]
+	}
+}
+
+```
+
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|code|int|必选| 0表示登录成功, 其它表示失败 
+|data| json | 可选 | 数据集
+|pages | int | 必选　| 总的分页数 
+|pageNum | int | 必选　| 当前页序号, 从0开始 
+|pageSize| int | 必选 | 每页的记录数 
+|total | int | 必选 | 总的记录数 
+|isLastPage | boolean | 必选 | 当前页是否为最后一页 
+|list| array | 可选 | 查询到的记录列表
+| list.id | string | 必选 | 服务器为此方案分配的唯一ID 
+| list.createTime | timestamp | 必选 | 创建时间
+ 
+
+## 获取方案详情
+```
+http://ip:port/yinuoda/app/api/solution/info?id=SOLUTION_ID
+```
+请求参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|id | string | 必选 | 方案的唯一ID
+
+
+返回结果
+```
+{
+	"code":0,
+	"data":{
+		"id":"SOLUTION_ID",
+		"projectId":"PROJECT_UUID",
+		"projectName":"PROJECT NAME",	
+		"createTime":1540217950000,
+		"catalogId":"CATALOG_ID",
+		"catalogName":"住宅未装修"
+		"blocks":[
+			{
+				"name":"一楼",
+				"type":"酒店大厅",
+				"hotSwap"：true,
+				"dry":false,
+				"swapParam":{
+					"areaSize":100.0,
+					"floorHeight": 3.0,
+					"swapNum":2,
+					"stdWind":600.0,
+				},
+				"averageParam":{
+					"peopleNum":2,
+					"stdWind":20.0,
+					"requireWind":200.0,
+				},
+			}
+		],
+		"device":{
+			/** 此处json为APP自定义的内容, 服务端不会作任何检查 */
+            "deviceConfig": [{
+                "deviceNum": 38,
+                "devicePR": "1000",//只存储和下发，后台不显示
+                "devicePrice": 1000,
+                "deviceName": "智能新风净化一体机FCA350"
+            }],
+            "price": "52480"，
+            "airFlow":1000,
+            "projectPrice":"100",
+		}
+	}
+}
+
+```
+
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|code|int|必选| 0表示登录成功, 其它表示失败 
+| blocks | array | 必选 | 区域信息
+| blocks.name| string | 必选 | 区域名称 
+| blocks.type | string | 必选 | 区域类型
+|  blocks.hotSwap | boolean | 可选 | 是否开启热交换
+|  blocks.dry | boolean | 可选 | 是否开启抽湿
+| swapParam | json | 必选 | 按换气次数计数出来的各种参数
+|  swapParam.areaSize | double | 可选 | 建筑面积
+|  swapParam.floorHeight | double | 必选 | 楼层高度
+|  swapParam.swapNum | int | 必选 | 换气次数
+|  swapParam.stdWind | double | 必选 | 理论新风量
+| averageParam | json | 必选 | 按人均换气量计算出来的参数
+|averageParam.peopleNum | int | 必选 |　人数
+| averageParam.stdWind |dobule |必选　| 理论新风量
+| averageParam.requireWind | double |必选　| 需求新风量
+|device| json | 可选 | APP端自定义的设备列表. 服务器只负责保存
+
+
+## 创建方案
+```
+POST http://ip:port/yinuoda/app/api/solution/create
+Body
+{
+	"projectId":"PROJECT_UUID",
+	"catalogId":"CATALOG_ID",
+	"blocks":[
+		{
+			"name":"一楼",
+			"type":"酒店大厅",
+			"hotSwap"：true,
+			"dry":false,
+			"swapParam":{
+				"areaSize":100.0,
+				"floorHeight": 3.0,
+				"swapNum":2,
+				"stdWind":600.0,
+			},
+			"averageParam":{
+				"peopleNum":2,
+				"stdWind":20.0,
+				"requireWind":200.0,
+			}
+		}
+	],
+	"device":{
+			/** 此处json为APP自定义的内容 */
+	}
+}
+```
+
+
+返回结果
+```
+{
+	"code":0,
+	"data":{
+		"id":"SOLUTION_ID",
+	}
+}
+
+```
+
+## 修改方案
+```
+POST http://ip:port/yinuoda/app/api/solution/update
+Body
+{
+	"id":"SOLUTION_ID",
+	"blocks":[
+		{
+			"name":"一楼",
+			"type":"酒店大厅",
+			"hotSwap"：true,
+			"dry":false,
+			"swapParam":{
+				"areaSize":100.0,
+				"floorHeight": 3.0,
+				"swapNum":2,
+				"stdWind":600.0,
+			},
+			"averageParam":{
+				"peopleNum":2,
+				"stdWind":20.0,
+				"requireWind":200.0,
+			}
+		}
+	],
+	"device":[
+			/** 此处json为APP自定义的内容 */
+	]
+}
+
+```
+
+body的内容为[获取方案详情](#获取方案详情)的`data`中的内容. 如果更新时, 移除或添加了一些字段, 服务器端也会产生一样的结果
+一般来说, 由APP定义的数据, 才能修改. 服务器定义的内部数据, 由服务器自己决定是否修改.  当然, APP不需要考虑这么多问题, 无脑上传就行了.
+
+## 场所人数新风量计算标准
+```
+GET http://ip:port/yinuoda/app/api/solution/wind-standard
+```
+返回结果
+```
+	"code":0
+	"data":{
+		"list":[
+			{
+				"label":"酒店客房(五星级)"
+				"wind":50
+			},
+			{
+				"label":"酒店客房(四星级)"
+				"wind":40
+			}
+		]
+	}
+```
+
+## 获取APP计算系数
+```
+GET http://ip:port/yinuoda/app/api/solution/factor?catalogId=
+```
+catalogId方案所属的分类的ID.
+
+返回结果
+```
+	"code":0
+	"data":{
+		"requiredWind":0.7,
+		"requiredWindTolerance":0.05,
+		"fca350_75":6,
+		"fca350_110":3,
+		"fca500_75":8,
+		"fca500_110":4,
+	}
+```
+
+
+
+## 获取净化模拟数据
+```
+POST http://ip:port/yinuoda/app/api/solution/effect
+{
+	"solutionId":"SOLUTION_ID",
+	"dateFormat":"M/d",
+}
+```
+请求参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|solutionId|string|必选| 方案设计的ID
+| dateFormat | string | 可选 | 时间的格式, 将作为java中的`SimpleDateFormat`的参数, 例子`M月d日`, `yyyy.MM.dd`
+
+
+返回结果
+```
+{
+	"code":0,
+	"data:{
+		"city":"上海",
+		"volume":300.0,
+		"floorHeight":3.0,
+		"requireWind":350.0,
+	    "xAxis":[ "1/1", "1/2", .... "12/31"],
+	    "series":[
+			{
+		      "name":"室内PM 2.5",
+		      data:[800, 100, ........],
+			},
+			{
+		      "name":"室内净化效果",
+		      data:[1, 2, ........],
+			}
+	    ]	
+	}
+}
+
+```
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|xAxis|jsonarray(string)|必选| x轴的标签, 根据`dateFormat`格式生成
+|series| json | x轴的数据
+| city | string | 可选 | 城市, 
+| volume | double | 可选 | 空间体积
+| floorHeight | double | 可选 | 层高 
+| requireWind | double | 可选 | 设计新风量
+
+
+
+## 删除方案
+软删除
+```
+http://ip:port/yinuoda/app/api/solution/delete?id=SOLUTION_ID
+```
+
+
+# 模块接口
+包括`现场勘测`, `立项施工`, `定制服务`, `售后服务`. 这些模块使用统一的`增删改查`接口
+
+## 获取模块步骤模板
+```
+GET http://ip:port/yinuoda/app/api/module/template?catalogId=CATALOG_ID&pageNum=0&pageSize=5
+```
+如果不想使用分页, 就不要带pageNum和pageSize这两个参数
+
+返回结果
+
+```
+{
+	"code":0
+	"data":{
+        "pages":10,    //总共多少页. 只有当启用了分页机制时, 才有这些分页参数
+        "pageNum":0,   //第几页
+        "pageSize":5, //每页大小
+        "total":50,  //总记录数
+        "isLastPage":false,
+		"list":[
+			{
+				"title":"步骤1: 开箱试机",
+				"html":"<p>段落1</p>",
+				"picNum":3,
+			}
+		]
+	}
+}
+```
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|title|string|必选| 步骤的标题
+|url| string | 必选 | 步骤说明的网页 
+|picNum | string | 必选 | 需要的图片的数量
+
+
+## 获取记录列表
+```
+http://ip:port/yinuoda/app/api/module/record/list?
+pageNum=0&pageSize=5&projectId=PROJECT_UUID&
+catalogId=CATALOG_ID1&catalogId=CATALOG_ID2
+```
+请求参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|pageNum|int|必选| 分页的序号, 从0开始 
+|pageSize| int | 必选 | 每页的大小, 必须大于0 
+|projectId | string | 必选 | 项目的UUID
+|catalogId| list<string> | 可选 | 根据分类进行筛选
+
+返回结果
+
+```
+{
+	"code":0
+	"data":{
+		"pages":10,
+		"pageNum":0,
+		"pageSize":5,
+		"total":50,
+		"isLastPage":false,
+		"projectId":"PROJECT_UUID",
+		"projectName":"项目名称",
+		//"moduleId":"ModuleID",
+		"moduleName":"模块名称", 
+		"list":[
+			{
+				"id":"RECORD_UUID",
+				"createTime":1540217950000,
+				"catalogId":"CATALOG_ID",
+				"catalogName":"CATALOG_Name"
+			}
+		]
+	}
+}
+```
+
+## 获取记录详情
+
+```
+http://ip:port/yinuoda/app/api/module/record/info?id=RECORD_UUID
+```
+
+返回结果
+```
+{
+	"code":0;
+	"data:{
+		"id":"RECORD_ID",
+		"projectId":"PROJECT_UUID",
+		"projectName":"项目名称",
+		"catalogId":"CATALOG_ID",
+		"catalogName":"CATALOG_NAME",
+		"createTime":1540217950000,
+		"steps":[
+			{
+				"remark":"备注",
+				"pictures":["https://", "https://"],
+				"status":"pass",
+				"title":"步骤1",
+			}
+		],
+		"appDataVer":"v1",
+		"appData":{
+			
+		}
+	}
+}
+
+```
+返回参数说明
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|pictures| array(string) |可选| 该步骤已上传的图片地址
+|status| string | 可选 | `pass`已通过, `no_pass`未通过, `review`正在审核中 
+|appData| json | 可选 | 模块中的定制化数据
+|appDataVer| string | 可选 | 用于控制appData的格式版本.
+
+## 获取记录中的单条步骤的详情
+```
+GET http://ip:port/yinuoda/app/api/module/record/step-info?id=RECORD_ID&stepIndex=0
+```
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|stepIndex| index | 必选| 第1个step的index为0.  无论是添加还是更新, 开发者都可以从任意合法的位置操作. index限制为小于模板定义的步骤数据. 比如模板定义的步骤数为3, 那么stepIndex的值只能为0, 1, 2
+
+服务器返回
+```
+{
+	"code":0,
+	"data":{
+			"remark":"备注",
+			"pictures":["https://", "https://"],
+			"status":"pass",
+			"title":"步骤1",
+	}
+}
+```
+ 
+
+ 
+ 
+## 创建记录
+```
+POST http://ip:port/yinuoda/app/api/module/record/create
+Body
+{
+	"projectId":"PROJECT_UUID",
+	"catalogId":"CATALOG_ID",
+	"steps":[
+		{
+			"remark":"备注",
+			"pictures":["https://", "https://"],
+			"status":"review" //创建时, 此参数由服务器强制设置为'review'
+		}
+	],
+	"appDataVer":"v1",
+	"appData":{
+		
+	}
+}
+
+```
+
+| 名称 | 类型 | 选项 | 说明 |
+| -    |  -  | -   |  -  | 
+|steps| array(json) |可选| 开发者可以先创建一条空记录, 然后再一个步骤一个步骤的添加. 也可以添加第一个步骤才创建 
+|status| string | 可选 | `pass`已通过, `no_pass`未通过, `review`正在审核中 
+|appData| json | 可选 | 模块中的定制化数据
+|appDataVer| string | 可选 | 用于控制appData的格式版本.
+
+返回结果
+```
+{
+	"code":0,
+	"data":{
+		"id":"RECORD_ID";
+	}
+}
+
+```
+
+
+## 修改/添加步骤
+```
+POST http://ip:port/yinuoda/app/api/module/record/update-step
+Body
+{
+	"id":"RECORD_ID",
+	"stepIndex":0
+	"step":{
+			"remark":"备注",
+			"pictures":["https://", "https://"],
+			"status":"pass"
+	}
+}
+
+```
+
+
+
+## 修改/添加定制的数据
+目前只有`施工管理`和`售后服务`模块需要用到
+```
+POST http://ip:port/yinuoda/app/api/module/record/update-appdata
+Body
+{
+	"id":"RECORD_ID",
+	"data":{
+			"devices":[
+                {
+                  "areaName": {
+                      "deviceType": 3000,
+                      "content": "FCA5000000000"
+                  },
+                  "device500": [
+                      {
+                          "deviceType": 3000,
+                          "content": "FCA5000000000"
+                      },
+                  ],
+                },
+                {},
+			]
+	}
+}
+```
+## 获取定制的数据
+```
+GET http://ip:port/yinuoda/app/api/module/record/get-appdata?id=RECORD_ID
+```
+
+服务器结构体
+```
+{
+	"code":0,
+	"data"{
+	    //内容同[修改/添加定制的数据]
+	    
+	}
+}
+```
+
+##修改记录(淘汰)
+```
+POST http://ip:port/yinuoda/app/api/module/record/update
+Body
+{
+	"id":"RECORD_ID",
+	"steps":[
+		{
+			"remark":"备注",
+			"pictures":["https://", "https://"],
+			"status":"pass"
+		}
+	],
+	"appDataVer":"v1",
+	"appData":{
+		
+	}
+}
+
+```
+body的内容为[获取记录详情](#获取记录详情)的`data`中的内容. 如果更新时, 移除或添加了一些字段, 服务器端也会产生一样的结果
+一般来说, 由APP定义的数据, 才能修改. 服务器定义的内部数据, 由服务器自己决定是否修改.  当然, APP不需要考虑这么多问题, 无脑上传就行了.
+
+## 删除记录
+
+```
+http://ip:port/yinuoda/app/api/module/record/delete
+
+```
+软删除
+
+
+# 键值管理
+用于自助式的存储一些自定义数据, 比如帮助文档
+```$xslt
+http://ip:port/yinuoda/app/api/kv?key=键名
+```
+
+----------
+
+
+
+
+# 控制台
+方案选择:
+JS 框架 https://cn.vuejs.org/
+UI控件 http://element-cn.eleme.io/#/zh-CN/component/installation
+参考:
+http://114.55.9.41:7040
+
+服务器IP: 120.55.189.11 ssh登录root Eavada2015  
+nginx目录  
+/mnt/panda/nginx/app/sbin
+./nginx -s reload
+
+控制台地址
+http://120.55.189.11/yinuoda-mgr
+
+# 维护
+
+启动mongodb和tomcat
+```
+cd /mnt/yinuoda-wzj/mongodb-linux-x86_64-4.0.6/bin
+./mongod --port 27016 --dbpath /mnt/yinuoda-wzj/db/  --bind_ip 0.0.0.0 --fork --logpath /mnt/yinuoda-wzj/log/mongodb/mongod.log --logappend --logRotate reopen
+
+cd /mnt/yinuoda-wzj/
+./start.sh
+
+```
+....
+
+# 待续
+未完
+</xmp>
+
+<script>
+  var pos = location.pathname.lastIndexOf("/");
+  var name = location.pathname.substr(pos+1);
+  console.log("name: " + name);
+  document.title = name;
+
+  var globalConfig = {
+    tocFirstLevel: 1,
+    tocLastLevel: 3,
+    previewWidth: '100%',
+    defaultViewMode: 'preview',
+    getFileName: function () {
+      // var d = new Date();
+      // return name + '-' + d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate() + '_' +
+      //   d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+      var pos = location.pathname.lastIndexOf("/");
+      var fileName = location.pathname.substr(pos+1);
+      if(fileName == null || fileName == undefined || fileName.length == 0){
+        fileName = "demo.html";
+      }else if(!fileName.endsWith(".html")){
+        fileName = fileName + ".html";
+      }
+      return fileName;
+    }
+  };
+  var gViewMode = "preview";
+</script>
+
+<div id="mdp-container" style="height: 98%;">
+  <div class="ui-layout-north">
+    <div id="toolbar" class="noselect">
+      <div id="editor-bar" style="float: left;" class="my-disable-click">
+      <i title="Bold" class="fa fa-bold styling-icon" data-modifier="**"></i>
+      <i title="Italic" class="fa fa-italic styling-icon" data-modifier="*"></i>
+      <i title="Strikethrough" class="fa fa-strikethrough styling-icon" data-modifier="~~"></i>
+      <i title="Underline" class="fa fa-underline styling-icon" data-modifier="++"></i>
+      <i title="Mark" class="fa fa-pencil styling-icon" data-modifier="=="></i>
+      <i class="dividor">|</i>
+      <i title="Heading 1" class="fa heading-icon" data-level="1">h1</i>
+      <i title="Heading 2" class="fa heading-icon" data-level="2">h2</i>
+      <i title="Heading 3" class="fa heading-icon" data-level="3">h3</i>
+      <!--<i title="Heading 4" class="fa heading-icon" data-level="4">h4</i>-->
+      <!--<i title="Heading 5" class="fa heading-icon" data-level="5">h5</i>-->
+      <!--<i title="Heading 6" class="fa heading-icon" data-level="6">h6</i>-->
+      <!--<i class="dividor">|</i>-->
+      <i title="Horizontal rule" id="horizontal-rule" class="fa fa-minus"></i>
+      <i title="Quote" class="fa fa-quote-left list-icon" data-prefix="> "></i>
+      <i title="Unordered list" class="fa fa-list-ul list-icon" data-prefix="- "></i>
+      <i title="Ordered list" class="fa fa-list-ol list-icon" data-prefix="1. "></i>
+      <i title="Incomplete task list" class="fa fa-square-o list-icon" data-prefix="- [ ] "></i>
+      <i title="Complete task list" class="fa fa-check-square-o list-icon" data-prefix="- [x] "></i>
+      <!--<i class="dividor">|</i>-->
+      <i title="Link" class="fa fa-link" id="link-icon" data-sample="link" data-sample-url="http://mdp.tylingsoft.com/"></i>
+      <i title="Image" class="fa fa-image" id="image-icon" data-sample="image"></i>
+      <i title="Code" class="fa fa-code" id="code-icon"></i>
+      <i title="Table" class="fa fa-table" id="table-icon" data-sample="header 1 | header 2
+---|---
+row 1 col 1 | row 1 col 2
+row 2 col 1 | row 2 col 2"></i>
+      <!--<i class="dividor">|</i>-->
+      <i title="Emoji" class="fa fa-smile-o" data-remodal-target="emoji-modal"></i>
+      <i title="Font awesome" class="fa fa-flag-o" data-remodal-target="fa-modal"></i>
+      <!--<i class="dividor">|</i>-->
+      <i title="Mathematical formula" class="fa fa-superscript" id="math-icon" data-sample="E = mc^2"></i>
+      <i title="Flowchart" class="fa fa-long-arrow-right mermaid-icon" data-sample="graph LR
+A-->B"></i>
+      <i title="Sequence diagram" class="fa fa-exchange mermaid-icon" data-sample="sequenceDiagram
+A->>B: How are you?
+B->>A: Great!"></i>
+      <i title="Gantt diagram" class="fa fa-sliders mermaid-icon" data-sample="gantt
+dateFormat YYYY-MM-DD
+section S1
+T1: 2014-01-01, 9d
+section S2
+T2: 2014-01-11, 9d
+section S3
+T3: 2014-01-02, 9d"></i>
+      <!--<i class="dividor">|</i>-->
+      </div>
+      <div>
+      <i title="Hide toolbar" class="fa fa-long-arrow-up" id="toggle-toolbar"></i>
+      <i title="编辑" class="fa fa-long-arrow-left" id="toggle-editor"></i>
+      <i title="预览" class="fa fa-long-arrow-right" id="toggle-preview"></i>
+      <i title="保存草稿" class="fa fa-save " id="save-cache"></i>
+      <span style="position:relative;"><i id="save-flag" class="my-red-point" style="display: none;"></i></span>
+      <span id="save_file" style="margin-left:5px; cursor: pointer">保存文件</span>
+      <!--<span id="clear_cache" style="cursor: pointer">清除缓存</span>-->
+      <!--<span id="recover_cache" style="cursor: pointer">还原缓存</span>-->
+
+        <a href="https://wzjwhut.github.io/markdown-editor/" target="_blank"><i title="示例" class="fa fa-info-circle"></i></a>
+      </div>
+    </div>
+  </div>
+  <div class="ui-layout-center">
+    <textarea id="editor"></textarea> <!-- editor -->
+    <div class="remodal" id="emoji-modal" data-remodal-id="emoji-modal"> <!-- emoji modal -->
+      <h2>Please enter an emoji code:</h2>
+      <p>Examples: "smile", "whale", "santa", "panda_face", "dog", "truck" ...</p>
+      <p>For a complete list, please check <a href="http://www.emoji-cheat-sheet.com/" target="_blank">Emoji Cheat Sheet</a>.</p>
+      <p><input class="form-control" id="emoji-code" placeholder="smile"></p>
+      <br><a data-remodal-action="cancel" class="remodal-cancel">Cancel</a>
+      <a data-remodal-action="confirm" class="remodal-confirm" id="emoji-confirm">OK</a>
+    </div>
+    <div class="remodal" id="fa-modal" data-remodal-id="fa-modal"> <!-- Font Awesome modal -->
+      <h2>Please enter a Font Awesome code:</h2>
+      <p>Examples: "cloud", "flag", "car", "truck", "heart", "dollar" ...</p>
+      <p>For a complete list, please check <a href="http://fontawesome.io/icons/" target="_blank">Font Awesome Icons</a>.</p>
+      <p><input class="form-control" id="fa-code" placeholder="heart"></p>
+      <br><a data-remodal-action="cancel" class="remodal-cancel">Cancel</a>
+      <a data-remodal-action="confirm" class="remodal-confirm" id="fa-confirm">OK</a>
+    </div>
+
+  </div>
+  <div class="ui-layout-east">
+    <article class="markdown-body" id="preview"></article>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.layout/1.4.3/jquery.layout.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.1.1/remodal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.1.1/remodal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+
+<!--<script src="../dist/index.bundle.js"></script>-->
+<script src="https://cdn.jsdelivr.net/gh/wzjwhut/markdown-editor@63af4c3f9657958410d252802357ae6bc9fe5c0f/dist/index.bundle.js"></script>
+</body>
+</html>
