@@ -108,10 +108,10 @@ HandlerThread 继承于 Thread,它本质上是一个线程，只不过是 Androi
 HandlerThread 比较合适处理那些在工作线程执行，需要花费时间偏长的任务。我们只需要把任务发送给 HandlerThread，然后就只需要等待任务执行结束的时候通知返回到主线程就好了。                       
 另外很重要的一点是，一旦我们使用了 HandlerThread，需要特别注意给 HandlerThread 设置不同的线程优先级，CPU 会根据设置的不同线程优先级对所有的线程进行调度优化。                     
 #### 3. IntentSerice
-默认的 Service 是执行在主线程的，可是通常情况下，这很容易影响到程序的绘制性能(抢占了主线程的资源)。除了前面介绍过的 AsyncTask 与 HandlerThread，我们还可以选择使用 IntentService 来实现异步操作。IntentService 继承自普通 Service 同时又在内部创建了一个 HandlerThread，在 onHandlerIntent()的回调里面处理扔到 IntentService 的任务，在执行完任务后会自动停止。所以 IntentService 就不仅仅具备了异步线程的特性，还同时保留了 Service 不受主页面生命周期影响，优先级比较高，适合执行高优先级的后台任务,不容易被杀死的特点。
-使用场景：
-适合于执行由 UI 触发的后台 Service 任务，并可以把后台任务执行的情况通过一定的机制反馈给 UI。
-基本用法：
+默认的 Service 是执行在主线程的，可是通常情况下，这很容易影响到程序的绘制性能(抢占了主线程的资源)。除了前面介绍过的 AsyncTask 与 HandlerThread，我们还可以选择使用 IntentService 来实现异步操作。IntentService 继承自普通 Service 同时又在内部创建了一个 HandlerThread，在 onHandlerIntent()的回调里面处理扔到 IntentService 的任务，在执行完任务后会自动停止。所以 IntentService 就不仅仅具备了异步线程的特性，还同时保留了 Service 不受主页面生命周期影响，优先级比较高，适合执行高优先级的后台任务,不容易被杀死的特点。      
+##### 使用场景：
+适合于执行由 UI 触发的后台 Service 任务，并可以把后台任务执行的情况通过一定的机制反馈给 UI。        
+##### 基本用法：
 ```java
 public class MyIntentService extends IntentService {
 
@@ -146,21 +146,21 @@ public class MyIntentService extends IntentService {
 }
 ```
 
-最后 Activity 通过 Handler 获取数据并刷新UI。
-注意事项：
-使用 IntentService 需要特别留意以下几点：
+最后 Activity 通过 Handler 获取数据并刷新UI。     
+##### 注意事项：
+使用 IntentService 需要特别留意以下几点：          
 首先，因为 IntentService 内置的是 HandlerThread 作为异步线程，所以每一个交给 IntentService 的任务都将以队列的方式逐个被执行到，一旦队列中有某个任务执行时间过长，那么就会导致后续的任务都会被延迟处理。
 其次，通常使用到 IntentService 的时候，我们会结合使用 BroadcastReceiver 把工作线程的任务执行结果返回给主 UI 线程。使用广播容易引起性能问题，我们可以使用 LocalBroadcastManager 来发送只在程序内部传递的广播，从而提升广播的性能。我们也可以使用 runOnUiThread() 快速回调到主 UI 线程。
-最后，包含正在运行的 IntentService 的程序相比起纯粹的后台程序更不容易被系统杀死，该程序的优先级是介于前台程序与纯后台程序之间的。
-4. ThreadPool
+最后，包含正在运行的 IntentService 的程序相比起纯粹的后台程序更不容易被系统杀死，该程序的优先级是介于前台程序与纯后台程序之间的。      
+#### 4. ThreadPool
 系统为我们提供了 ThreadPoolExecutor 来实现多线程并发执行任务。
-使用场景：
+##### 使用场景：
 把任务分解成不同的单元，分发到各个不同的线程上，进行同时并发处理。
-基本用法：
+##### 基本用法：
 线程池有四个构造方法，这四个构造方法咋一看，前面三个都是调用第四个构造方法实现的，每一个构造方法都特别复杂，参数很多，使用起来比较麻烦。
 下面列出是四种构造方法，从简单到复杂：
 
-第一种
+- 第一种
 ```java
 ThreadPoolExecutor(
 int corePoolSize, 
@@ -170,7 +170,7 @@ TimeUnit unit,
 BlockingQueue<Runnable> workQueue
 );
 ```
-第二种
+- 第二种
 ```java
 ThreadPoolExecutor(
 int corePoolSize, 
@@ -182,7 +182,7 @@ RejectedExecutionHandler handler
 );
 ```
 
-第三种
+- 第三种
 ```java
 ThreadPoolExecutor(
 int corePoolSize, 
@@ -194,7 +194,7 @@ ThreadFactory threadFactory
 );
 ```
 
-第四种
+- 第四种
 ```java
 ThreadPoolExecutor(
 int corePoolSize, 
@@ -206,21 +206,21 @@ ThreadFactory threadFactory,
 RejectedExecutionHandler handler
 );
 ```
-参数作用：
+##### 参数作用：
 
-corePoolSize:
+- corePoolSize:
 池中所保存的线程数，包括空闲线程。
-maximumPoolSize:
+- maximumPoolSize:
 池中允许的最大线程数。
-keepAliveTime:
+- keepAliveTime:
 当线程数大于核心时，此为终止前多余的空闲线程等待新任务的最长时间。
-unit:
+- unit:
 keepAliveTime参数的时间单位
-workQueue:
+- workQueue:
 执行前用于保持任务的队列。此队列仅保持由 execute 方法提交的 Runnable 任务。
-threadFactory
+- threadFactory
 执行程序创建新线程时使用的工厂。
-**handler **
+- **handler **
 由于超出线程范围和队列容量而使执行被阻塞时所使用的处理程序。
 
 这里用复杂的一个构造方法说明如何手动创建一个线程池
@@ -351,9 +351,9 @@ public class ThreadPoolTest {
 <p align="center"><u>线程池执行完毕</u></p>                                          
 注意事项：
 
-使用线程池需要特别注意同时并发线程数量的控制，理论上来说，我们可以设置任意你想要的并发数量，但是这样做非常的不好。因为 CPU 只能同时执行固定数量的线程数，一旦同时并发的线程数量超过 CPU 能够同时执行的阈值，CPU 就需要花费精力来判断到底哪些线程的优先级比较高，需要在不同的线程之间进行调度切换。一旦同时并发的线程数量达到一定的量级，这个时候 CPU 在不同线程之间进行调度的时间就可能过长，反而导致性能严重下降。
-另外需要关注的一点是，每开一个新的线程，都会耗费至少 64K+ 的内存。为了能够方便的对线程数量进行控制，ThreadPoolExecutor 为我们提供了初始化的并发线程数量，以及最大的并发数量进行设置。
-另外需要关注的一个问题是：Runtime.getRuntime().availableProcesser()方法并不可靠，他返回的值并不是真实的 CPU 核心数，因为 CPU 会在某些情况下选择对部分核心进行睡眠处理，在这种情况下，返回的数量就只能是激活的 CPU 核心数。
+- 使用线程池需要特别注意同时并发线程数量的控制，理论上来说，我们可以设置任意你想要的并发数量，但是这样做非常的不好。因为 CPU 只能同时执行固定数量的线程数，一旦同时并发的线程数量超过 CPU 能够同时执行的阈值，CPU 就需要花费精力来判断到底哪些线程的优先级比较高，需要在不同的线程之间进行调度切换。一旦同时并发的线程数量达到一定的量级，这个时候 CPU 在不同线程之间进行调度的时间就可能过长，反而导致性能严重下降。
+- 另外需要关注的一点是，每开一个新的线程，都会耗费至少 64K+ 的内存。为了能够方便的对线程数量进行控制，ThreadPoolExecutor 为我们提供了初始化的并发线程数量，以及最大的并发数量进行设置。
+- 另外需要关注的一个问题是：Runtime.getRuntime().availableProcesser()方法并不可靠，他返回的值并不是真实的 CPU 核心数，因为 CPU 会在某些情况下选择对部分核心进行睡眠处理，在这种情况下，返回的数量就只能是激活的 CPU 核心数。
 
 
 转自：https://www.jianshu.com/p/34cffd700f75
