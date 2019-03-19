@@ -225,3 +225,24 @@ Parcelable: 直接在内存上读写，开销小，效率高，适用于运行�
 - 网络存储<br/>
 由于手机内存的限制，和数据实时性的要求，手机APP大部分的数据来源还是来自于服务器，通过调动接口获取，本地只是作为缓存，辅助存储用。比如天气数据等
 
+15、Merge、ViewStub的作用
+---------
+- Merge:<br/>
+merge用于消除视图层次结构中的冗余视图,主要用于辅助include标签,例如根布局是Linearlayout,那么我们又include一个LinerLayout布局就没意义了,反而会减慢UI加载速度
+##### 使用场景
+1. 根布局是FrameLayout且不需要设置background或padding等属性,可以用merge代替,因为Activity的ContentView父元素就是FrameLayout,所以可以用merge消除只剩一个.<br/>
+2. 某布局作为子布局被其他布局include时,使用merge当作该布局的顶节点,这样在被引入时顶结点会自动被忽略,而将其子节点全部合并到主布局中.<br/>
+3. 自定义View如果继承LinearLayout(ViewGroup),建议让自定义View的布局文件根布局设置成merge,这样能少一层结点.
+##### 注意事项
+1. 因为merge标签并不是View,所以在通过LayoutInflate.inflate()方法渲染的时候,第二个参数必须指定一个父容器,且第三个参数必须为true,也就是必须为merge下的视图指定一个父亲节点.<br/>
+2. 因为merge不是View,所以对merge标签设置的所有属性都是无效的.<br/>
+3. merge标签必须使用在根布局<br/>
+4. ViewStub标签中的layout布局不能使用merge标签
+- ViewStub<br/>
+ViewStub 标签最大的优点是当你需要时才会加载,使用它并不会影响UI初始化时的性能.各种不常用的布局像进度条、显示错误消息等可以使用ViewStub标签,以减少内存使用量,加快渲染速度.ViewStub是一个不可见的,实际上是把宽高设置为0的View.效果有点类似普通的view.setVisible(),但性能体验提高不少<br/>
+第一次初始化时,初始化的是ViewStub View,当我们调用inflate()或setVisibility()后会被remove掉,然后在将其中的layout加到当前view hierarchy中
+
+##### 注意事项
+1. ViewStub标签不支持merge标签<br/>
+2. 使用ViewStub时应先判断ViewStub(做单例)是否已经加载过,因为ViewStub的inflate只能被调用一次,第二次调用会抛出异常,setVisibility可以被调用多次,但不建议这么做(ViewStub 调用过后,可能被GC掉,再调用setVisibility()会报异常)<br/>
+3. 为ViewStub赋值的android:layout_XX属性会替换待加载布局文件的根节点对应的属性
