@@ -227,7 +227,7 @@ Parcelable: 直接在内存上读写，开销小，效率高，适用于运行�
 
 15、Merge、ViewStub的作用
 ---------
-#### Merge:  
+### Merge:  
 merge用于消除视图层次结构中的冗余视图,主要用于辅助include标签,例如根布局是Linearlayout,那么我们又include一个LinerLayout布局就没意义了,反而会减慢UI加载速度
 ##### 使用场景
 1. 根布局是FrameLayout且不需要设置background或padding等属性,可以用merge代替,因为Activity的ContentView父元素就是FrameLayout,所以可以用merge消除只剩一个.<br/>
@@ -238,7 +238,7 @@ merge用于消除视图层次结构中的冗余视图,主要用于辅助include�
 2. 因为merge不是View,所以对merge标签设置的所有属性都是无效的.<br/>
 3. merge标签必须使用在根布局<br/>
 4. ViewStub标签中的layout布局不能使用merge标签
-#### ViewStub
+### ViewStub
 ViewStub 标签最大的优点是当你需要时才会加载,使用它并不会影响UI初始化时的性能.各种不常用的布局像进度条、显示错误消息等可以使用ViewStub标签,以减少内存使用量,加快渲染速度.ViewStub是一个不可见的,实际上是把宽高设置为0的View.效果有点类似普通的view.setVisible(),但性能体验提高不少  
 
 第一次初始化时,初始化的是ViewStub View,当我们调用inflate()或setVisibility()后会被remove掉,然后在将其中的layout加到当前view hierarchy中
