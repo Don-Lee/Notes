@@ -247,3 +247,44 @@ ViewStub 标签最大的优点是当你需要时才会加载,使用它并不会�
 1. ViewStub标签不支持merge标签<br/>
 2. 使用ViewStub时应先判断ViewStub(做单例)是否已经加载过,因为ViewStub的inflate只能被调用一次,第二次调用会抛出异常,setVisibility可以被调用多次,但不建议这么做(ViewStub 调用过后,可能被GC掉,再调用setVisibility()会报异常)<br/>
 3. 为ViewStub赋值的android:layout_XX属性会替换待加载布局文件的根节点对应的属性
+
+16、Android App的启动过程？怎么加速启动App?
+-----------
+- app启动方式  
+启动方式分为：冷启动、热启动、温启动。
+1. 冷启动  
+启动app时，后台没有app的进程，或者进程被killed，这叫冷启动。冷启动因为系统会重新创建一个新的进程分配给它，所以会先创建和初始化Application类，再创建和初始化MainActivity类（包括一系列的测量、布局、绘制），最后显示在界面上。
+2. 热启动  
+启动app时，后台已有app的进程（例：按back键、home键，应用虽然会退出，但是该应用的进程是依然会保留在后台，可进入任务列表查看），所以在已有进程的情况下，这种启动会从已有的进程中来启动应用，这个方式叫热启动。  
+热启动因为会从已有的进程中来启动，所以热启动就不会走Application这步了，而是直接走MainActivity（包括一系列的测量、布局、绘制），所以热启动的过程只需要创建和初始化一个MainActivity就行了，而不必创建和初始化Application，因为一个应用从新进程的创建到进程的销毁，Application只会初始化一次。
+3. 温启动  
+介于冷启动和热启动之间, 一般来说在以下两种情况下发生:
+用户back退出了App, 然后又启动. App进程可能还在运行, 但是activity需要重建。用户退出App后, 系统可能由于内存原因将App杀死, 进程和activity都需要重启, 但是可以在onCreate中将被动杀死锁保存的状态(saved instance state)恢复。
+通过三种启动状态的相关描述, 可以看出我们要做的启动优化其实就是针对冷启动. 热启动和温启动都相对较快.
+- App启动过程  
+App启动进程大致可以分为3步：
+1. 创建进程  
+当用户点击app的启动图标后，AMS(ActivityManagerService)会创建一个新的进程分配给应用  
+2. 绑定Application  
+接下来要做的就是将进程和指定的Application绑定起来，这个是通过ActivityThread对象中调用bindApplication()方法完成的  
+3. 启动Activity
+经过前两个步骤之后, 系统已经拥有了该application的进程. 后面的调用顺序就是普通的从一个已经存在的进程中启动一个新进程的activity了.  
+
+更多详情可参考[[译]Android Application启动流程分析](https://www.jianshu.com/p/a5532ecc8377)
+
+- 扩展
+1. AMS（ActivityManagerService）
+Activity的管理者。其实除了Activity，AMS也管Service等组件信息，另外AMS还管理Process信息。  
+2. ActivityThread  
+每一个App进程有一个主线程，它由ActivityThread描述。它负责这个App进程中各个Activity的调度和执行，以及响应AMS的操作请求等。  
+3. ApplicationThread  
+AMS和Activity通过它进行通信。对于AMS而言，ApplicationThread代表了App的主线程。简而言之，它是AMS与ActivityThread进行交互的接口。注意ActivityThread和ApplicationThread之间的关系并不像Activity与Application。后者的关系是Application中包含了多个Activity，而前者ActivityThread和ApplicationThread是同一个东西的两种"View"，ApplicationThread是在AMS眼中的ActivityThread。
+
+- App加速启动优化方案  
+1. 利用提前展示出来的Window，快速展示出来一个界面，给用户快速反馈的体验(闪屏页面)；
+2. 避免在启动时做密集沉重的初始化（Heavy app initialization）；
+3. 定位问题：避免I/O操作、反序列化、网络操作、布局嵌套等。  
+
+更多详情可参考[Android性能优化（一）之启动加速35%](https://juejin.im/post/5874bff0128fe1006b443fa0)
+
+
