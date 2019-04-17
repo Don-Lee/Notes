@@ -10,3 +10,5 @@ Process 'command 'C:\Users\Administrator\AppData\Local\Android\Sdk\build-tools\2
 - 项目中各种包之间版本互斥问题
 - 资源文件问题  用的图片应该是png而不是jpg
 - Build.Gradle 文件里加几句代码...
+
+更多可参考:[完美解决Android编译时出现aapt.exe finished with non-zero exit value 1 吐血整理](https://blog.csdn.net/qq_24118527/article/details/83586161)
