@@ -358,7 +358,7 @@ ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 ```
 
 ## 四、Bitmap 
-1. 应根据实际展示需要，压缩图片，而不是直接显示原图。手机屏幕比较小，直接显示原图，并不会增加视觉上效果，但是却会耗费大量宝贵的内存。  
+1. 【推荐】应根据实际展示需要，压缩图片，而不是直接显示原图。手机屏幕比较小，直接显示原图，并不会增加视觉上效果，但是却会耗费大量宝贵的内存。  
 正例：  
 ```java
     public static Bitmap decodeSampleBitmapFromResource(Resources res, int resId, int reqWidth, int reqHeight) {
