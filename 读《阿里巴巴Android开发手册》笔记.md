@@ -356,3 +356,44 @@ taskQueue, new BackgroundThreadFactory(), new DefaultRejectedExecutionHandler())
 ```java
 ExecutorService cachedThreadPool = Executors.newCachedThreadPool(); 
 ```
+
+## 三、Bitmap 
+1. 应根据实际展示需要，压缩图片，而不是直接显示原图。手机屏幕比较小，直接显示原图，并不会增加视觉上效果，但是却会耗费大量宝贵的内存。  
+正例：  
+```java
+    public static Bitmap decodeSampleBitmapFromResource(Resources res, int resId, int reqWidth, int reqHeight) {
+        //1.获得图片的尺寸
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;//为true可以避免将图片加载到内存中
+        BitmapFactory.decodeResource(res, resId, options);
+
+        //2.根据图片的分辨率以及我们实际需要展示的大小，计算压缩率
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        //设置压缩率，并解码
+        options.inJustDecodeBounds = false;
+
+        return BitmapFactory.decodeResource(res, resId, options);
+    }
+    
+    //计算图片的压缩比
+    public static int calculateInSampleSize(BitmapFactory.Options options,
+                                            int reqWidth, int reqHeight) {
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            //四舍五入计算高度压缩比
+            final int heightRatio = Math.round((float) height
+                    / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+            //去两者中的较大值
+            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+        }
+        return inSampleSize;
+    }
+```
+反例：  
+不压缩显示原图
+
+更多可参考 《阿里巴巴android开发手册》
