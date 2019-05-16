@@ -45,5 +45,5 @@ textview.setText(Html.fromHtml(s));
     ”;href=“  ==>URLSpan(sub),		                    
 "annotation;" ==>Annotation(key, value),	                      
 
-另附：  [HTML特殊字符编码对照表](https://www.jb51.net/onlineread/htmlchar.htm)
+另附：  [HTML特殊字符编码对照表](http://evassmat.com/8GTP)
         
