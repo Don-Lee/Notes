@@ -18,4 +18,4 @@ gradlew processDebugResources --debug
 然后将终端输出的信息复制到文本框中搜索“aapt”,因为报错是在aapt里，所以我们重点关注aapt的信息,然后你会看到错误文件的路径及位置。
 
 
-更多可参考:[完美解决Android编译时出现aapt.exe finished with non-zero exit value 1 吐血整理](https://blog.csdn.net/qq_24118527/article/details/83586161)
+更多可参考:[完美解决Android编译时出现aapt.exe finished with non-zero exit value 1 吐血整理](http://evassmat.com/8GOa)
