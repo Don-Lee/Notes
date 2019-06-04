@@ -29,7 +29,7 @@
     
     productFlavors{
         ewd{
-            buildConfigField "int","EVN_TYPE","0"
+            buildConfigField "int","ENV_TYPE","0"
             // 对resValue在java代码中的使用：String app_id = getResources().getString(R.string.app_id);
             resValue("string", "app_id", "50074")
             resValue("string", "app_start", "1")
@@ -40,7 +40,7 @@
         }
         chunqin{
             //java代码中可以使用if(BuildConfig.EVN_TYPE==1)来判断是哪个渠道
-            buildConfigField "int","EVN_TYPE","1"
+            buildConfigField "int","ENV_TYPE","1"
             //包名
             applicationId "com.ewd.cq"
             manifestPlaceholders=[app_name:"@string/app_name_cq",icon:"@mipmap/ic_launcher"]
