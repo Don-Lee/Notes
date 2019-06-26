@@ -1,0 +1,9 @@
+## IDEA运行vue项目步骤如下：
+1.点击Run按钮前方的 ‘Edit Configurations’,打开Configurations面板,点击左上角的+号,选择npm选项   
+<img src="https://github.com/Don-Lee/Notes/blob/master/Images/vue1.png"/>  
+
+2.Name为可自定义，package.json选择你工程中的package.json，Command为run，Scripts为dev,然后就可以直接在idea中运行了  
+<img src="https://github.com/Don-Lee/Notes/blob/master/Images/vue2.png"/>
+
+## IDEA打包vue项目也很简单,重复上述步骤即可,唯一区别就是步骤2中的Scripts的值为build  
+<img src="https://github.com/Don-Lee/Notes/blob/master/Images/vue3.png"/>
