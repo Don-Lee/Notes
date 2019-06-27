@@ -6,7 +6,7 @@ webview.setWebViewClient(new WebViewClient(){
 public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error){
  
 //handler.cancel(); //默认的处理方式，WebView变成空白页
- handler.process();//接受证书
+ handler.proceed();//接受证书
 
 }
  
